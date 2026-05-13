@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+dbcheckproj/
+dbcheck.cs
+*.log
+*.user
+*.suo
+*.cache
+*.pdb

@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Migrations\Pretreat\v1.0.0\01_table.sql" />
+    <None Remove="Migrations\Upgrade\v1.0.0\01_table.sql" />
+    <None Remove="Migrations\Upgrade\v1.0.0\02_config.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Migrations\Pretreat\v1.0.0\01_table.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Migrations\Upgrade\v1.0.0\01_table.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Migrations\Upgrade\v1.0.0\02_config.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LXT.IAM.Api.Bll\LXT.IAM.Api.Bll.csproj" />
+    <ProjectReference Include="..\LXT.IAM.Api.Common\LXT.IAM.Api.Common.csproj" />
+    <ProjectReference Include="..\LXT.IAM.Api.Dal\LXT.IAM.Api.Dal.csproj" />
+    <ProjectReference Include="..\LXT.IAM.Api.Model\LXT.IAM.Api.Model.csproj" />
+    <ProjectReference Include="..\LXT.IAM.Api.Storage\LXT.IAM.Api.Storage.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+</Project>

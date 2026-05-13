@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LXT.IAM.Api.Common\LXT.IAM.Api.Common.csproj" />
+    <ProjectReference Include="..\LXT.IAM.Api.Model\LXT.IAM.Api.Model.csproj" />
+    <ProjectReference Include="..\LXT.IAM.Api.Storage\LXT.IAM.Api.Storage.csproj" />
+  </ItemGroup>
+
+</Project>

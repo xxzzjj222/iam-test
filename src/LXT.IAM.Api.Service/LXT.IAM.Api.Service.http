@@ -1,0 +1,6 @@
+@LXT.IAM.Api.Service_HostAddress = http://localhost:5014
+
+GET {{LXT.IAM.Api.Service_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
