@@ -8,8 +8,14 @@ using Yitter.IdGenerator;
 
 namespace LXT.IAM.Api.Service.Extensions;
 
+/// <summary>
+/// 服务注册扩展
+/// </summary>
 public static class ServiceCollectionExtension
 {
+    /// <summary>
+    /// 自动注入业务对象
+    /// </summary>
     public static IServiceCollection AddBussinessObjectInjection(this IServiceCollection services)
     {
         var assemblies = AssemblyHelper.GetAssemblies("LXT.IAM.Api.*.dll");
@@ -35,6 +41,9 @@ public static class ServiceCollectionExtension
         return services;
     }
 
+    /// <summary>
+    /// 获取日志配置
+    /// </summary>
     public static Serilog.ILogger GetLogConfig(string name, bool enableLokiLogging, string? lokiUrl)
     {
         var loggerConfiguration = new LoggerConfiguration()
@@ -51,6 +60,9 @@ public static class ServiceCollectionExtension
         return loggerConfiguration.CreateLogger();
     }
 
+    /// <summary>
+    /// 注册雪花算法
+    /// </summary>
     public static IServiceCollection AddSnowflakeId(this IServiceCollection services, ushort workId)
     {
         var options = new IdGeneratorOptions
