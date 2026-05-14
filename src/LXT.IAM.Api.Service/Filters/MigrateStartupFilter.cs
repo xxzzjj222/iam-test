@@ -2,15 +2,24 @@ using LXT.IAM.Api.Bll.Migration;
 
 namespace LXT.IAM.Api.Service.Filters;
 
+/// <summary>
+/// 数据库迁移启动过滤器
+/// </summary>
 public class MigrateStartupFilter : IStartupFilter
 {
     private readonly IServiceProvider _serviceProvider;
 
+    /// <summary>
+    /// 构造
+    /// </summary>
     public MigrateStartupFilter(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
 
+    /// <summary>
+    /// 配置启动管道
+    /// </summary>
     public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
     {
         return builder =>

@@ -5,17 +5,26 @@ using Newtonsoft.Json.Serialization;
 
 namespace LXT.IAM.Api.Service.Middlewares;
 
+/// <summary>
+/// 全局异常处理中间件
+/// </summary>
 public class ErrorHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ErrorHandlingMiddleware> _logger;
 
+    /// <summary>
+    /// 构造
+    /// </summary>
     public ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger)
     {
         _next = next;
         _logger = logger;
     }
 
+    /// <summary>
+    /// 执行中间件
+    /// </summary>
     public async Task InvokeAsync(HttpContext context)
     {
         try
