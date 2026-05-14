@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="AlibabaCloud.SDK.Dysmsapi20170525" Version="4.3.1" />
+    <PackageReference Include="MailKit" Version="4.10.0" />
     <PackageReference Include="SKIT.FlurlHttpClient.ByteDance.MicroApp" Version="3.7.0" />
     <PackageReference Include="SKIT.FlurlHttpClient.Wechat.Api" Version="3.6.0" />
     <ProjectReference Include="..\LXT.IAM.Api.Common\LXT.IAM.Api.Common.csproj" />

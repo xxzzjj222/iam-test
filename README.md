@@ -9,7 +9,7 @@
 - 提供统一邀请码与邀请关系管理
 - 提供开放接口给业务系统做内部用户查询、服务间认证、统计上报
 - 提供平台角色、平台菜单、开放客户端等后台管理能力
-- 提供短信验证码、微信小程序登录、抖音小程序登录能力
+- 提供短信验证码、邮箱验证码、微信小程序登录、抖音小程序登录能力
 
 ## 目录结构
 
@@ -36,6 +36,7 @@
 - Dapper
 - Serilog
 - Alibaba Cloud SMS SDK
+- MailKit
 - SKIT.FlurlHttpClient.Wechat.Api
 - SKIT.FlurlHttpClient.ByteDance.MicroApp
 
@@ -65,6 +66,7 @@
 - `Jwt:SecurityKey`
 - `SnowflakeIdOptions:WorkId`
 - `SMS`
+- `Email`
 - `AppOptions`
 - `DouyinAppOptions`
 
@@ -77,6 +79,19 @@
 - `SMS:ALIBABA_CLOUD_ACCESS_KEY_SECRET`
 - `SMS:ALIBABA_CLOUD_ACCESS_SIGNNAME`
 - `SMS:ALIBABA_CLOUD_ACCESS_TEMPLATECODE`
+
+### 邮箱配置
+
+参考 `ZKBX.AIThesis.API`：
+
+- `Email:Enabled`
+- `Email:PostfixServerIp`
+- `Email:PostfixServerPort`
+- `Email:CurrName`
+- `Email:CurrEmailAddr`
+- `Email:MailPwd`
+- `Email:ELimitTime`
+- `Email:ElimitCount`
 
 ### 微信小程序配置
 
@@ -116,6 +131,11 @@ Swagger：
 ### 验证码
 
 - `POST /api/verify-code/send`
+
+说明：
+
+- `receiverType=phone` 时走短信发送
+- `receiverType=email` 时走邮箱发送
 
 ### 用户管理
 
@@ -187,12 +207,13 @@ Swagger：
 - 活跃/业务/角色快照上报
 - dashboard 聚合与日统计汇总
 - 超级管理员初始化与修复
-- 微信/抖音小程序登录接入框架
+- 微信/抖音小程序登录接入
 - 阿里云短信发送适配层
+- MailKit 邮箱发送适配层
 
 当前仍建议后续补充：
 
 - 真实微信公众号登录
-- 邮件验证码发送适配层
+- 邮箱验证码频控与缓存次数限制
 - 更完整的异常消息资源整理
 - 平台菜单按钮级权限前端联动

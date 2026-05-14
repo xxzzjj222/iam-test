@@ -30,6 +30,7 @@ builder.Services.AddScoped<IHttpContextUtility, HttpContextUtility>();
 builder.Services.AddScoped<IDapperProvider, DapperProvider>();
 builder.Services.AddScoped<JwtTokenHelper>();
 builder.Services.Configure<SmsOptions>(builder.Configuration.GetSection("SMS"));
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<AppOptions>(builder.Configuration.GetSection("AppOptions"));
 builder.Services.Configure<DouyinAppOptions>(builder.Configuration.GetSection("DouyinAppOptions"));
 

@@ -1,6 +1,7 @@
 using LXT.IAM.Api.Bll.Services.VerifyCode.Dtos;
 using LXT.IAM.Api.Common.Consts;
 using LXT.IAM.Api.Common.Exceptions;
+using LXT.IAM.Api.Bll.Services.Email;
 using LXT.IAM.Api.Common.Helper;
 using LXT.IAM.Api.Bll.Services.Sms;
 using LXT.IAM.Api.Storage.Context;
@@ -15,12 +16,14 @@ public class VerifyCodeService : IVerifyCodeService
     private readonly IAMDbContext _db;
     private readonly IHostEnvironment _hostEnvironment;
     private readonly ISmsSender _smsSender;
+    private readonly IEmailSender _emailSender;
 
-    public VerifyCodeService(IAMDbContext db, IHostEnvironment hostEnvironment, ISmsSender smsSender)
+    public VerifyCodeService(IAMDbContext db, IHostEnvironment hostEnvironment, ISmsSender smsSender, IEmailSender emailSender)
     {
         _db = db;
         _hostEnvironment = hostEnvironment;
         _smsSender = smsSender;
+        _emailSender = emailSender;
     }
 
     public async Task<SendVerifyCodeOutput> SendAsync(SendVerifyCodeInput input)
@@ -58,6 +61,10 @@ public class VerifyCodeService : IVerifyCodeService
         if (input.ReceiverType == AuthConst.AccountTypePhone)
         {
             await _smsSender.SendVerifyCodeAsync(receiver, code);
+        }
+        else if (input.ReceiverType == AuthConst.AccountTypeEmail)
+        {
+            await _emailSender.SendVerifyCodeAsync(receiver, code);
         }
 
         await _db.SaveChangesAsync();
