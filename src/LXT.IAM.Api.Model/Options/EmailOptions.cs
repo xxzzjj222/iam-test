@@ -48,4 +48,19 @@ public class EmailOptions : IOptions<EmailOptions>
     /// 时间窗口内最大次数
     /// </summary>
     public int ElimitCount { get; set; } = 3;
+
+    /// <summary>
+    /// 单次发送间隔秒数
+    /// </summary>
+    public int SendIntervalSeconds { get; set; } = 59;
+
+    /// <summary>
+    /// 邮件主题模板
+    /// </summary>
+    public string SubjectTemplate { get; set; } = "邮箱验证码";
+
+    /// <summary>
+    /// 邮件内容模板
+    /// </summary>
+    public string BodyTemplate { get; set; } = "您的验证码是：{code}，10分钟内有效。";
 }

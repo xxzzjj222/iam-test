@@ -33,7 +33,7 @@ public class AliyunSmsSender : ISmsSender
             PhoneNumbers = phone,
             SignName = _options.ALIBABA_CLOUD_ACCESS_SIGNNAME,
             TemplateCode = _options.ALIBABA_CLOUD_ACCESS_TEMPLATECODE,
-            TemplateParam = $"{{\"code\":\"{code}\",\"time\":\"10\"}}"
+            TemplateParam = $"{{\"code\":\"{code}\",\"time\":\"{_options.LimitTimeMinutes}\"}}"
         };
 
         var runtime = new AlibabaCloud.TeaUtil.Models.RuntimeOptions();

@@ -79,6 +79,10 @@
 - `SMS:ALIBABA_CLOUD_ACCESS_KEY_SECRET`
 - `SMS:ALIBABA_CLOUD_ACCESS_SIGNNAME`
 - `SMS:ALIBABA_CLOUD_ACCESS_TEMPLATECODE`
+- `SMS:SendIntervalSeconds`
+- `SMS:LimitTimeMinutes`
+- `SMS:LimitCount`
+- `SMS:TemplateText`
 
 ### 邮箱配置
 
@@ -92,6 +96,9 @@
 - `Email:MailPwd`
 - `Email:ELimitTime`
 - `Email:ElimitCount`
+- `Email:SendIntervalSeconds`
+- `Email:SubjectTemplate`
+- `Email:BodyTemplate`
 
 ### 微信小程序配置
 
@@ -136,6 +143,7 @@ Swagger：
 
 - `receiverType=phone` 时走短信发送
 - `receiverType=email` 时走邮箱发送
+- 当前已支持短信/邮箱发送频控和时间窗口次数限制
 
 ### 用户管理
 

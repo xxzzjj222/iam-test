@@ -13,6 +13,8 @@ public static class AuthConst
 
     public const string VerifySceneLogin = "login";
     public const string VerifySceneRegister = "register";
+    public const string VerifySceneEmailLogin = "email_login";
+    public const string VerifySceneEmailRegister = "email_register";
 
     public const string GrantTypeClientCredentials = "client_credentials";
 

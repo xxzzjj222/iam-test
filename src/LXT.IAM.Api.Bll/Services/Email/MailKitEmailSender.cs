@@ -32,10 +32,10 @@ public class MailKitEmailSender : IEmailSender
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress(_options.CurrName, _options.CurrEmailAddr));
         message.To.Add(new MailboxAddress(email, email));
-        message.Subject = "邮箱验证码";
+        message.Subject = _options.SubjectTemplate;
         message.Body = new TextPart("html")
         {
-            Text = $"您的验证码是：<b>{code}</b>，10分钟内有效。"
+            Text = _options.BodyTemplate.Replace("{code}", code)
         };
 
         using var smtp = new SmtpClient();
