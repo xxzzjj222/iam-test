@@ -1,4 +1,6 @@
 using LXT.IAM.Api.Bll.Services.Auth.Dtos;
+using LXT.IAM.Api.Bll.Services.SocialAuth;
+using LXT.IAM.Api.Bll.Services.SocialAuth.Dtos;
 using LXT.IAM.Api.Common.Consts;
 using LXT.IAM.Api.Common.Exceptions;
 using LXT.IAM.Api.Common.Helper;
@@ -9,19 +11,37 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LXT.IAM.Api.Bll.Services.Auth;
 
+/// <summary>
+/// 认证业务服务
+/// </summary>
 public class AuthService : IAuthService
 {
     private readonly IAMDbContext _db;
     private readonly JwtTokenHelper _jwtTokenHelper;
     private readonly IHttpContextUtility _httpContextUtility;
+    private readonly IWeChatMiniAppAuthService _weChatMiniAppAuthService;
+    private readonly IDouyinMiniAppAuthService _douyinMiniAppAuthService;
 
-    public AuthService(IAMDbContext db, JwtTokenHelper jwtTokenHelper, IHttpContextUtility httpContextUtility)
+    /// <summary>
+    /// 构造
+    /// </summary>
+    public AuthService(
+        IAMDbContext db,
+        JwtTokenHelper jwtTokenHelper,
+        IHttpContextUtility httpContextUtility,
+        IWeChatMiniAppAuthService weChatMiniAppAuthService,
+        IDouyinMiniAppAuthService douyinMiniAppAuthService)
     {
         _db = db;
         _jwtTokenHelper = jwtTokenHelper;
         _httpContextUtility = httpContextUtility;
+        _weChatMiniAppAuthService = weChatMiniAppAuthService;
+        _douyinMiniAppAuthService = douyinMiniAppAuthService;
     }
 
+    /// <summary>
+    /// 账号密码登录
+    /// </summary>
     public async Task<LoginOutput> LoginByPasswordAsync(LoginByPasswordInput input)
     {
         var identifier = await FindIdentifierAsync(input.AccountType, input.Account, input.CountryCode);
@@ -36,7 +56,9 @@ public class AuthService : IAuthService
             throw new InvalidParameterException("账号已冻结");
         }
 
-        var credential = await _db.UserCredential.FirstOrDefaultAsync(x => x.CommonUserId == identifier.CommonUserId && x.CredentialType == AuthConst.CredentialTypePassword);
+        var credential = await _db.UserCredential.FirstOrDefaultAsync(x =>
+            x.CommonUserId == identifier.CommonUserId &&
+            x.CredentialType == AuthConst.CredentialTypePassword);
         if (credential == null || !PasswordHelper.VerifyPassword(input.Password, credential.PasswordHash))
         {
             throw new UnauthorizedException("账号或密码错误");
@@ -45,6 +67,9 @@ public class AuthService : IAuthService
         return await CreateLoginOutputAsync(user, input.AppCode, input.ClientType, AuthConst.LoginTypePassword);
     }
 
+    /// <summary>
+    /// 验证码登录
+    /// </summary>
     public async Task<LoginOutput> LoginByCodeAsync(LoginByCodeInput input)
     {
         var identifier = await FindIdentifierAsync(input.AccountType, input.Account, input.CountryCode);
@@ -69,6 +94,57 @@ public class AuthService : IAuthService
         return await CreateLoginOutputAsync(user, input.AppCode, input.ClientType, AuthConst.LoginTypeVerifyCode);
     }
 
+    /// <summary>
+    /// 微信小程序登录
+    /// </summary>
+    public async Task<LoginOutput> LoginByWeChatMiniAppAsync(WeChatMiniAppLoginInput input)
+    {
+        var session = await _weChatMiniAppAuthService.Code2SessionAsync(input.WeChatCode);
+        var phoneInfo = await _weChatMiniAppAuthService.DecodePhoneAsync(new DecodePhoneInput
+        {
+            SessionKey = session.SessionKey,
+            IV = input.IV,
+            EncryptedData = input.EncryptedData
+        });
+
+        return await LoginOrRegisterByPhoneAsync(
+            phoneInfo.PhoneNumber,
+            phoneInfo.CountryCode,
+            input.AppCode,
+            input.ClientType,
+            AuthConst.LoginTypeVerifyCode,
+            "wechat_miniapp",
+            session.OpenId,
+            input.InviteCode);
+    }
+
+    /// <summary>
+    /// 抖音小程序登录
+    /// </summary>
+    public async Task<LoginOutput> LoginByDouyinMiniAppAsync(DouyinMiniAppLoginInput input)
+    {
+        var session = await _douyinMiniAppAuthService.Code2SessionAsync(input.Code);
+        var phoneInfo = await _weChatMiniAppAuthService.DecodePhoneAsync(new DecodePhoneInput
+        {
+            SessionKey = session.SessionKey,
+            IV = input.IV,
+            EncryptedData = input.EncryptedData
+        });
+
+        return await LoginOrRegisterByPhoneAsync(
+            phoneInfo.PhoneNumber,
+            phoneInfo.CountryCode,
+            input.AppCode,
+            input.ClientType,
+            AuthConst.LoginTypeVerifyCode,
+            "douyin_miniapp",
+            session.OpenId,
+            input.InviteCode);
+    }
+
+    /// <summary>
+    /// 注册
+    /// </summary>
     public async Task<LoginOutput> RegisterAsync(RegisterInput input)
     {
         var existingIdentifier = await FindIdentifierAsync(input.AccountType, input.Account, input.CountryCode);
@@ -179,6 +255,9 @@ public class AuthService : IAuthService
         return await CreateLoginOutputAsync(user, input.AppCode, AuthConst.LoginTypeRegister, AuthConst.LoginTypeRegister);
     }
 
+    /// <summary>
+    /// 刷新令牌
+    /// </summary>
     public async Task<LoginOutput> RefreshTokenAsync(RefreshTokenInput input)
     {
         var refreshTokenHash = SecurityHelper.Sha256(input.RefreshToken);
@@ -212,6 +291,9 @@ public class AuthService : IAuthService
         };
     }
 
+    /// <summary>
+    /// 获取当前用户信息
+    /// </summary>
     public async Task<CurrentUserOutput> GetCurrentUserAsync()
     {
         var commonUserId = _httpContextUtility.GetUserId();
@@ -227,6 +309,9 @@ public class AuthService : IAuthService
         };
     }
 
+    /// <summary>
+    /// 修改当前用户密码
+    /// </summary>
     public async Task ChangePasswordAsync(ChangePasswordInput input)
     {
         var commonUserId = _httpContextUtility.GetUserId();
@@ -341,5 +426,134 @@ public class AuthService : IAuthService
 
         var name = account.Split('@').FirstOrDefault();
         return string.IsNullOrWhiteSpace(name) ? "新用户" : name;
+    }
+
+    private async Task<LoginOutput> LoginOrRegisterByPhoneAsync(
+        string phone,
+        string? countryCode,
+        string appCode,
+        string clientType,
+        string loginType,
+        string platformType,
+        string openId,
+        string? inviteCode)
+    {
+        var identifier = await FindIdentifierAsync(AuthConst.AccountTypePhone, phone, countryCode);
+        CommonUserEntity user;
+        var now = DateTime.UtcNow;
+
+        if (identifier == null)
+        {
+            var commonUserId = Guid.NewGuid();
+            user = new CommonUserEntity
+            {
+                Id = Yitter.IdGenerator.YitIdHelper.NextId(),
+                CommonUserId = commonUserId,
+                Name = BuildDefaultName(AuthConst.AccountTypePhone, phone),
+                Status = CommonStatusConst.Enabled,
+                IsFrozen = false,
+                RegisterAppCode = appCode,
+                LastLoginTime = now,
+                LastActiveTime = now,
+                CountryCode = countryCode,
+                Phone = phone
+            };
+            _db.CommonUser.Add(user);
+            _db.UserIdentifier.Add(new UserIdentifierEntity
+            {
+                Id = Yitter.IdGenerator.YitIdHelper.NextId(),
+                CommonUserId = commonUserId,
+                IdentifierType = AuthConst.AccountTypePhone,
+                Identifier = phone.Trim(),
+                CountryCode = countryCode,
+                IsPrimary = true,
+                IsVerified = true,
+                VerifiedTime = now
+            });
+
+            var grantApps = await _db.App.Where(x => x.Status == CommonStatusConst.Enabled && x.AutoGrantForNormalUser).ToListAsync();
+            foreach (var app in grantApps)
+            {
+                _db.UserApp.Add(new UserAppEntity
+                {
+                    Id = Yitter.IdGenerator.YitIdHelper.NextId(),
+                    CommonUserId = commonUserId,
+                    AppId = app.Id,
+                    GrantType = AuthConst.UserAppGrantTypeAuto,
+                    Status = CommonStatusConst.Enabled
+                });
+            }
+
+            _db.InviteCode.Add(new InviteCodeEntity
+            {
+                Id = Yitter.IdGenerator.YitIdHelper.NextId(),
+                CommonUserId = commonUserId,
+                Code = InviteCodeHelper.GenerateUniversalCode(user.Id),
+                CodeType = AuthConst.CodeTypeUniversal,
+                IsDefault = true,
+                Status = CommonStatusConst.Enabled
+            });
+
+            if (!string.IsNullOrWhiteSpace(inviteCode))
+            {
+                var inviterCode = await _db.InviteCode.FirstOrDefaultAsync(x => x.Code == inviteCode && x.Status == CommonStatusConst.Enabled);
+                if (inviterCode != null)
+                {
+                    _db.InviteRelation.Add(new InviteRelationEntity
+                    {
+                        Id = Yitter.IdGenerator.YitIdHelper.NextId(),
+                        InviterUserId = inviterCode.CommonUserId,
+                        InviteeUserId = commonUserId,
+                        InviteCodeId = inviterCode.Id,
+                        SourceAppCode = inviterCode.AppCode ?? appCode,
+                        RegisterAppCode = appCode,
+                        ResolvedBizRoleCode = inviterCode.BizRoleCode,
+                        ResolvedExternalRefId = inviterCode.ExternalRefId,
+                        BindTime = now
+                    });
+                }
+            }
+        }
+        else
+        {
+            user = await _db.CommonUser.FirstAsync(x => x.CommonUserId == identifier.CommonUserId);
+        }
+
+        if (user.IsFrozen)
+        {
+            throw new InvalidParameterException("账号已冻结");
+        }
+
+        await UpsertSocialAccountAsync(user.CommonUserId, platformType, openId);
+        await _db.SaveChangesAsync();
+
+        return await CreateLoginOutputAsync(user, appCode, clientType, loginType);
+    }
+
+    private async Task UpsertSocialAccountAsync(Guid commonUserId, string platformType, string openId)
+    {
+        var entity = await _db.UserSocialAccount.FirstOrDefaultAsync(x =>
+            x.CommonUserId == commonUserId &&
+            x.PlatformType == platformType &&
+            x.OpenId == openId);
+
+        if (entity == null)
+        {
+            _db.UserSocialAccount.Add(new UserSocialAccountEntity
+            {
+                Id = Yitter.IdGenerator.YitIdHelper.NextId(),
+                CommonUserId = commonUserId,
+                PlatformType = platformType,
+                AppId = string.Empty,
+                OpenId = openId,
+                Status = CommonStatusConst.Enabled,
+                BindTime = DateTime.UtcNow
+            });
+        }
+        else
+        {
+            entity.Status = CommonStatusConst.Enabled;
+            entity.BindTime = DateTime.UtcNow;
+        }
     }
 }

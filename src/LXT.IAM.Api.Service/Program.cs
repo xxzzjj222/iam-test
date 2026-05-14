@@ -5,6 +5,7 @@ using LXT.IAM.Api.Common.Intefaces;
 using LXT.IAM.Api.Common.Orms.Dapper;
 using LXT.IAM.Api.Common.Utils;
 using LXT.IAM.Api.Dal.Dals.Base;
+using LXT.IAM.Api.Model.Options;
 using LXT.IAM.Api.Service.Extensions;
 using LXT.IAM.Api.Service.Filters;
 using LXT.IAM.Api.Service.Middlewares;
@@ -28,6 +29,9 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IHttpContextUtility, HttpContextUtility>();
 builder.Services.AddScoped<IDapperProvider, DapperProvider>();
 builder.Services.AddScoped<JwtTokenHelper>();
+builder.Services.Configure<SmsOptions>(builder.Configuration.GetSection("SMS"));
+builder.Services.Configure<AppOptions>(builder.Configuration.GetSection("AppOptions"));
+builder.Services.Configure<DouyinAppOptions>(builder.Configuration.GetSection("DouyinAppOptions"));
 
 builder.Services.AddI18nAspNetCore(defaultLanguage: "zh-CN");
 builder.Services.AddI18nResource(options =>

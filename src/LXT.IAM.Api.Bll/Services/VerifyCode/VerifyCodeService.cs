@@ -2,6 +2,7 @@ using LXT.IAM.Api.Bll.Services.VerifyCode.Dtos;
 using LXT.IAM.Api.Common.Consts;
 using LXT.IAM.Api.Common.Exceptions;
 using LXT.IAM.Api.Common.Helper;
+using LXT.IAM.Api.Bll.Services.Sms;
 using LXT.IAM.Api.Storage.Context;
 using LXT.IAM.Api.Storage.Entity;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +14,13 @@ public class VerifyCodeService : IVerifyCodeService
 {
     private readonly IAMDbContext _db;
     private readonly IHostEnvironment _hostEnvironment;
+    private readonly ISmsSender _smsSender;
 
-    public VerifyCodeService(IAMDbContext db, IHostEnvironment hostEnvironment)
+    public VerifyCodeService(IAMDbContext db, IHostEnvironment hostEnvironment, ISmsSender smsSender)
     {
         _db = db;
         _hostEnvironment = hostEnvironment;
+        _smsSender = smsSender;
     }
 
     public async Task<SendVerifyCodeOutput> SendAsync(SendVerifyCodeInput input)
@@ -51,6 +54,11 @@ public class VerifyCodeService : IVerifyCodeService
             Status = CommonStatusConst.VerifyCodeUnused,
             SendChannel = input.ReceiverType
         });
+
+        if (input.ReceiverType == AuthConst.AccountTypePhone)
+        {
+            await _smsSender.SendVerifyCodeAsync(receiver, code);
+        }
 
         await _db.SaveChangesAsync();
 

@@ -1,5 +1,6 @@
 using LXT.IAM.Api.Bll.Services.Auth;
 using LXT.IAM.Api.Bll.Services.Auth.Dtos;
+using LXT.IAM.Api.Bll.Services.SocialAuth.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -40,6 +41,26 @@ public class AuthController : ControllerBase
     public async Task<LoginOutput> LoginByCodeAsync([FromBody] LoginByCodeInput input)
     {
         return await _authService.LoginByCodeAsync(input);
+    }
+
+    /// <summary>
+    /// 微信小程序登录
+    /// </summary>
+    [AllowAnonymous]
+    [HttpPost("login/wechat-miniapp")]
+    public async Task<LoginOutput> LoginByWeChatMiniAppAsync([FromBody] WeChatMiniAppLoginInput input)
+    {
+        return await _authService.LoginByWeChatMiniAppAsync(input);
+    }
+
+    /// <summary>
+    /// 抖音小程序登录
+    /// </summary>
+    [AllowAnonymous]
+    [HttpPost("login/douyin-miniapp")]
+    public async Task<LoginOutput> LoginByDouyinMiniAppAsync([FromBody] DouyinMiniAppLoginInput input)
+    {
+        return await _authService.LoginByDouyinMiniAppAsync(input);
     }
 
     /// <summary>
