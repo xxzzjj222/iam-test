@@ -1,5 +1,6 @@
 using LXT.IAM.Api.Bll.Services.OpenAuth.Dtos;
 using LXT.IAM.Api.Common.Consts;
+using LXT.IAM.Api.Common.Exceptions;
 using LXT.IAM.Api.Common.Helper;
 using LXT.IAM.Api.Storage.Context;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,7 @@ public class OpenAuthService : IOpenAuthService
     public OpenAuthService(IAMDbContext db, IConfiguration configuration)
     {
         _db = db;
-        _securityKey = configuration["Jwt:SecurityKey"] ?? throw new InvalidOperationException("Jwt:SecurityKey is missing");
+        _securityKey = configuration["Jwt:SecurityKey"] ?? throw new InternalServerException("Jwt配置缺失");
     }
 
     public async Task<ClientCredentialTokenOutput> GetClientTokenAsync(ClientCredentialTokenInput input)
@@ -27,18 +28,18 @@ public class OpenAuthService : IOpenAuthService
         var client = await _db.OauthClient.FirstOrDefaultAsync(x =>
             x.ClientCode == input.ClientCode &&
             x.Status == CommonStatusConst.Enabled &&
-            x.GrantType == "client_credentials");
+            x.GrantType == AuthConst.GrantTypeClientCredentials);
 
         if (client == null || client.ClientSecretHash != SecurityHelper.Sha256(input.ClientSecret))
         {
-            throw new InvalidOperationException("客户端认证失败");
+            throw new UnauthorizedException("客户端认证失败");
         }
 
         var expireTime = DateTime.UtcNow.AddSeconds(client.AccessTokenExpireSeconds);
         var claims = new List<Claim>
         {
             new(ClaimConst.ClientCode, client.ClientCode),
-            new(ClaimConst.TokenType, "client_credentials"),
+            new(ClaimConst.TokenType, AuthConst.TokenTypeClientCredentials),
             new(ClaimConst.Scope, client.Scopes ?? string.Empty)
         };
 

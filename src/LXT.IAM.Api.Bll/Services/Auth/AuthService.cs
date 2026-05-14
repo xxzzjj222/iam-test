@@ -1,5 +1,6 @@
 using LXT.IAM.Api.Bll.Services.Auth.Dtos;
 using LXT.IAM.Api.Common.Consts;
+using LXT.IAM.Api.Common.Exceptions;
 using LXT.IAM.Api.Common.Helper;
 using LXT.IAM.Api.Common.Intefaces;
 using LXT.IAM.Api.Storage.Context;
@@ -26,19 +27,19 @@ public class AuthService : IAuthService
         var identifier = await FindIdentifierAsync(input.AccountType, input.Account, input.CountryCode);
         if (identifier == null)
         {
-            throw new InvalidOperationException("账号不存在");
+            throw new NotFoundException("账号不存在");
         }
 
         var user = await _db.CommonUser.FirstAsync(x => x.CommonUserId == identifier.CommonUserId);
         if (user.IsFrozen)
         {
-            throw new InvalidOperationException("账号已冻结");
+            throw new InvalidParameterException("账号已冻结");
         }
 
         var credential = await _db.UserCredential.FirstOrDefaultAsync(x => x.CommonUserId == identifier.CommonUserId && x.CredentialType == AuthConst.CredentialTypePassword);
         if (credential == null || !PasswordHelper.VerifyPassword(input.Password, credential.PasswordHash))
         {
-            throw new InvalidOperationException("账号或密码错误");
+            throw new UnauthorizedException("账号或密码错误");
         }
 
         return await CreateLoginOutputAsync(user, input.AppCode, input.ClientType, AuthConst.LoginTypePassword);
@@ -49,20 +50,20 @@ public class AuthService : IAuthService
         var identifier = await FindIdentifierAsync(input.AccountType, input.Account, input.CountryCode);
         if (identifier == null)
         {
-            throw new InvalidOperationException("账号不存在");
+            throw new NotFoundException("账号不存在");
         }
 
         var verifyCode = await GetAvailableVerifyCodeAsync(input.Account, input.AccountType, AuthConst.VerifySceneLogin, input.VerifyCode);
         if (verifyCode == null)
         {
-            throw new InvalidOperationException("验证码无效");
+            throw new InvalidParameterException("验证码无效");
         }
 
         await UseVerifyCodeAsync(verifyCode);
         var user = await _db.CommonUser.FirstAsync(x => x.CommonUserId == identifier.CommonUserId);
         if (user.IsFrozen)
         {
-            throw new InvalidOperationException("账号已冻结");
+            throw new InvalidParameterException("账号已冻结");
         }
 
         return await CreateLoginOutputAsync(user, input.AppCode, input.ClientType, AuthConst.LoginTypeVerifyCode);
@@ -73,13 +74,13 @@ public class AuthService : IAuthService
         var existingIdentifier = await FindIdentifierAsync(input.AccountType, input.Account, input.CountryCode);
         if (existingIdentifier != null)
         {
-            throw new InvalidOperationException("账号已存在");
+            throw new InvalidParameterException("账号已存在");
         }
 
         var verifyCode = await GetAvailableVerifyCodeAsync(input.Account, input.AccountType, AuthConst.VerifySceneRegister, input.VerifyCode);
         if (verifyCode == null)
         {
-            throw new InvalidOperationException("验证码无效");
+            throw new InvalidParameterException("验证码无效");
         }
 
         var commonUserId = Guid.NewGuid();
@@ -187,7 +188,7 @@ public class AuthService : IAuthService
             x.RefreshTokenExpireTime > DateTime.UtcNow);
         if (session == null)
         {
-            throw new InvalidOperationException("refreshToken无效");
+            throw new UnauthorizedException("refreshToken无效");
         }
 
         var user = await _db.CommonUser.FirstAsync(x => x.CommonUserId == session.CommonUserId);
@@ -224,6 +225,29 @@ public class AuthService : IAuthService
             Email = user.Email,
             InviteCodes = inviteCodes
         };
+    }
+
+    public async Task ChangePasswordAsync(ChangePasswordInput input)
+    {
+        var commonUserId = _httpContextUtility.GetUserId();
+        var credential = await _db.UserCredential.FirstOrDefaultAsync(x =>
+            x.CommonUserId == commonUserId &&
+            x.CredentialType == AuthConst.CredentialTypePassword);
+        if (credential == null)
+        {
+            throw new InvalidParameterException("当前用户未设置密码");
+        }
+
+        if (!PasswordHelper.VerifyPassword(input.OldPassword, credential.PasswordHash))
+        {
+            throw new InvalidParameterException("原密码错误");
+        }
+
+        credential.PasswordHash = PasswordHelper.HashPassword(input.NewPassword);
+        credential.PasswordVersion = "bcrypt";
+        credential.NeedResetPassword = false;
+        credential.LastPasswordChangeTime = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
     }
 
     private async Task<UserIdentifierEntity?> FindIdentifierAsync(string accountType, string account, string? countryCode)
@@ -300,8 +324,7 @@ public class AuthService : IAuthService
         return await (from upr in _db.UserPlatformRole
                       join pr in _db.PlatformRole on upr.RoleId equals pr.Id
                       where upr.CommonUserId == commonUserId
-                      select pr.Code)
-            .ToListAsync();
+                      select pr.Code).ToListAsync();
     }
 
     private static string NormalizeIdentifier(string accountType, string account)

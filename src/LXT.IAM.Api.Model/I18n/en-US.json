@@ -1,0 +1,20 @@
+{
+  "内部服务错误": "Internal server error",
+  "未找到": "Not found",
+  "请求错误": "Bad request",
+  "参数无效": "Invalid parameter",
+  "未授权": "Unauthorized",
+  "账号不存在": "Account does not exist",
+  "账号已冻结": "Account is frozen",
+  "账号或密码错误": "Invalid account or password",
+  "验证码无效": "Invalid verification code",
+  "账号已存在": "Account already exists",
+  "refreshToken无效": "Invalid refresh token",
+  "当前用户未设置密码": "Password is not set for current user",
+  "原密码错误": "Old password is incorrect",
+  "邀请码无效": "Invalid invite code",
+  "客户端认证失败": "Client authentication failed",
+  "Jwt配置缺失": "JWT configuration is missing",
+  "新用户": "New user",
+  "用户{0}": "User {0}"
+}

@@ -1,4 +1,5 @@
 using LXT.IAM.Api.Common.Consts;
+using LXT.IAM.Api.Common.Helper;
 using LXT.IAM.Api.Common.Models;
 using LXT.IAM.Api.Bll.Services.User.Dtos;
 using LXT.IAM.Api.Storage.Context;
@@ -130,6 +131,37 @@ public class UserService : IUserService
                 GrantType = "manual",
                 Status = CommonStatusConst.Enabled
             });
+        }
+
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task ResetPasswordAsync(Guid commonUserId, ResetPasswordInput input)
+    {
+        var credential = await _db.UserCredential.FirstOrDefaultAsync(x =>
+            x.CommonUserId == commonUserId &&
+            x.CredentialType == AuthConst.CredentialTypePassword);
+
+        if (credential == null)
+        {
+            credential = new Storage.Entity.UserCredentialEntity
+            {
+                Id = Yitter.IdGenerator.YitIdHelper.NextId(),
+                CommonUserId = commonUserId,
+                CredentialType = AuthConst.CredentialTypePassword,
+                PasswordHash = PasswordHelper.HashPassword(input.NewPassword),
+                PasswordVersion = "bcrypt",
+                NeedResetPassword = input.NeedResetPassword,
+                LastPasswordChangeTime = DateTime.UtcNow
+            };
+            _db.UserCredential.Add(credential);
+        }
+        else
+        {
+            credential.PasswordHash = PasswordHelper.HashPassword(input.NewPassword);
+            credential.PasswordVersion = "bcrypt";
+            credential.NeedResetPassword = input.NeedResetPassword;
+            credential.LastPasswordChangeTime = DateTime.UtcNow;
         }
 
         await _db.SaveChangesAsync();

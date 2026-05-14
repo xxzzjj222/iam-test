@@ -1,4 +1,5 @@
 using LXT.IAM.Api.Common.Consts;
+using LXT.IAM.Api.Common.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -13,7 +14,7 @@ public class JwtTokenHelper
 
     public JwtTokenHelper(IConfiguration configuration)
     {
-        _securityKey = configuration["Jwt:SecurityKey"] ?? throw new InvalidOperationException("Jwt:SecurityKey is missing");
+        _securityKey = configuration["Jwt:SecurityKey"] ?? throw new InternalServerException("Jwt配置缺失");
     }
 
     public string GenerateAccessToken(Guid commonUserId, string userName, string? phone, string? email, Guid sessionId, string appCode, IEnumerable<string>? platformRoles = null, int expireHours = 2)

@@ -30,6 +30,8 @@ public class SystemInitService : ISystemInitService
         if (identifier != null)
         {
             await EnsureSuperAdminRoleAsync(identifier.CommonUserId);
+            await EnsureAllAppAccessAsync(identifier.CommonUserId);
+            await EnsureSuperAdminRoleFunctionsAsync();
             await _db.SaveChangesAsync();
             return new InitializeSystemOutput
             {
@@ -90,6 +92,8 @@ public class SystemInitService : ISystemInitService
         });
 
         await EnsureSuperAdminRoleAsync(commonUserId);
+        await EnsureAllAppAccessAsync(commonUserId);
+        await EnsureSuperAdminRoleFunctionsAsync();
         await _db.SaveChangesAsync();
 
         return new InitializeSystemOutput
@@ -99,6 +103,69 @@ public class SystemInitService : ISystemInitService
             PlatformRoleCode = PlatformConst.PlatformRoleSuperAdmin,
             Created = true
         };
+    }
+
+    public async Task<SystemInitStatusOutput> GetStatusAsync()
+    {
+        var hasSuperAdminRole = await _db.PlatformRole.AnyAsync(x => x.Code == PlatformConst.PlatformRoleSuperAdmin);
+        var roleId = await _db.PlatformRole.Where(x => x.Code == PlatformConst.PlatformRoleSuperAdmin).Select(x => (long?)x.Id).FirstOrDefaultAsync();
+        var hasSuperAdminUser = roleId.HasValue && await _db.UserPlatformRole.AnyAsync(x => x.RoleId == roleId.Value);
+        var appCount = await _db.App.CountAsync();
+        var functionCount = await _db.PlatformFunction.CountAsync();
+
+        return new SystemInitStatusOutput
+        {
+            Initialized = hasSuperAdminRole && hasSuperAdminUser && appCount > 0,
+            HasSuperAdminRole = hasSuperAdminRole,
+            HasSuperAdminUser = hasSuperAdminUser,
+            AppCount = appCount,
+            PlatformFunctionCount = functionCount
+        };
+    }
+
+    public async Task<SystemRepairOutput> RepairAsync()
+    {
+        var output = new SystemRepairOutput();
+        var superAdminRole = await _db.PlatformRole.FirstOrDefaultAsync(x => x.Code == PlatformConst.PlatformRoleSuperAdmin);
+        if (superAdminRole == null)
+        {
+            return output;
+        }
+
+        var functionIds = await _db.PlatformFunction.Select(x => x.Id).ToListAsync();
+        var existingRoleFunctionIds = await _db.PlatformRoleFunction.Where(x => x.RoleId == superAdminRole.Id).Select(x => x.FunctionId).ToListAsync();
+        foreach (var functionId in functionIds.Except(existingRoleFunctionIds))
+        {
+            _db.PlatformRoleFunction.Add(new PlatformRoleFunctionEntity
+            {
+                Id = Yitter.IdGenerator.YitIdHelper.NextId(),
+                RoleId = superAdminRole.Id,
+                FunctionId = functionId
+            });
+            output.AddedRoleFunctions++;
+        }
+
+        var superAdminUserIds = await _db.UserPlatformRole.Where(x => x.RoleId == superAdminRole.Id).Select(x => x.CommonUserId).Distinct().ToListAsync();
+        var appIds = await _db.App.Where(x => x.Status == CommonStatusConst.Enabled).Select(x => x.Id).ToListAsync();
+        foreach (var commonUserId in superAdminUserIds)
+        {
+            var existingUserAppIds = await _db.UserApp.Where(x => x.CommonUserId == commonUserId).Select(x => x.AppId).ToListAsync();
+            foreach (var appId in appIds.Except(existingUserAppIds))
+            {
+                _db.UserApp.Add(new UserAppEntity
+                {
+                    Id = Yitter.IdGenerator.YitIdHelper.NextId(),
+                    CommonUserId = commonUserId,
+                    AppId = appId,
+                    GrantType = AuthConst.UserAppGrantTypeManual,
+                    Status = CommonStatusConst.Enabled
+                });
+                output.AddedUserApps++;
+            }
+        }
+
+        await _db.SaveChangesAsync();
+        return output;
     }
 
     private async Task EnsureSuperAdminRoleAsync(Guid commonUserId)
@@ -112,6 +179,39 @@ public class SystemInitService : ISystemInitService
                 Id = Yitter.IdGenerator.YitIdHelper.NextId(),
                 CommonUserId = commonUserId,
                 RoleId = superAdminRole.Id
+            });
+        }
+    }
+
+    private async Task EnsureAllAppAccessAsync(Guid commonUserId)
+    {
+        var appIds = await _db.App.Where(x => x.Status == CommonStatusConst.Enabled).Select(x => x.Id).ToListAsync();
+        var existingAppIds = await _db.UserApp.Where(x => x.CommonUserId == commonUserId).Select(x => x.AppId).ToListAsync();
+        foreach (var appId in appIds.Except(existingAppIds))
+        {
+            _db.UserApp.Add(new UserAppEntity
+            {
+                Id = Yitter.IdGenerator.YitIdHelper.NextId(),
+                CommonUserId = commonUserId,
+                AppId = appId,
+                GrantType = AuthConst.UserAppGrantTypeManual,
+                Status = CommonStatusConst.Enabled
+            });
+        }
+    }
+
+    private async Task EnsureSuperAdminRoleFunctionsAsync()
+    {
+        var superAdminRole = await _db.PlatformRole.FirstAsync(x => x.Code == PlatformConst.PlatformRoleSuperAdmin);
+        var functionIds = await _db.PlatformFunction.Select(x => x.Id).ToListAsync();
+        var existingFunctionIds = await _db.PlatformRoleFunction.Where(x => x.RoleId == superAdminRole.Id).Select(x => x.FunctionId).ToListAsync();
+        foreach (var functionId in functionIds.Except(existingFunctionIds))
+        {
+            _db.PlatformRoleFunction.Add(new PlatformRoleFunctionEntity
+            {
+                Id = Yitter.IdGenerator.YitIdHelper.NextId(),
+                RoleId = superAdminRole.Id,
+                FunctionId = functionId
             });
         }
     }

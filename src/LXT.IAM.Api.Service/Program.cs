@@ -1,12 +1,13 @@
 using LXT.IAM.Api.Bll.Mapper;
-using LXT.IAM.Api.Common.Helper;
 using LXT.IAM.Api.Common.Consts;
+using LXT.IAM.Api.Common.Helper;
 using LXT.IAM.Api.Common.Intefaces;
 using LXT.IAM.Api.Common.Orms.Dapper;
 using LXT.IAM.Api.Common.Utils;
 using LXT.IAM.Api.Dal.Dals.Base;
 using LXT.IAM.Api.Service.Extensions;
 using LXT.IAM.Api.Service.Filters;
+using LXT.IAM.Api.Service.Middlewares;
 using LXT.IAM.Api.Storage.Context;
 using Maomi.I18n;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -88,6 +89,7 @@ builder.Services.AddSwaggerGen(options =>
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey
     });
+    options.OperationFilter<AcceptLanguageHeaderFilter>();
 });
 
 Log.Logger = ServiceCollectionExtension.GetLogConfig("LXT.IAM.Api", bool.Parse(builder.Configuration["Loki:Enable"] ?? "false"), builder.Configuration["Loki:Url"]);
@@ -122,6 +124,7 @@ if (bool.TryParse(app.Configuration["Swagger:Enable"], out var isEnable) && isEn
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseI18n();
 app.UseStaticFiles();
 app.UseCors("default");

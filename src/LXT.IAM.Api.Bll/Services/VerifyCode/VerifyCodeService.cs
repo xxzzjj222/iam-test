@@ -1,25 +1,34 @@
+using LXT.IAM.Api.Bll.Services.VerifyCode.Dtos;
 using LXT.IAM.Api.Common.Consts;
+using LXT.IAM.Api.Common.Exceptions;
 using LXT.IAM.Api.Common.Helper;
 using LXT.IAM.Api.Storage.Context;
 using LXT.IAM.Api.Storage.Entity;
-using LXT.IAM.Api.Bll.Services.VerifyCode.Dtos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 
 namespace LXT.IAM.Api.Bll.Services.VerifyCode;
 
 public class VerifyCodeService : IVerifyCodeService
 {
     private readonly IAMDbContext _db;
+    private readonly IHostEnvironment _hostEnvironment;
 
-    public VerifyCodeService(IAMDbContext db)
+    public VerifyCodeService(IAMDbContext db, IHostEnvironment hostEnvironment)
     {
         _db = db;
+        _hostEnvironment = hostEnvironment;
     }
 
     public async Task<SendVerifyCodeOutput> SendAsync(SendVerifyCodeInput input)
     {
+        if (string.IsNullOrWhiteSpace(input.Receiver))
+        {
+            throw new BadRequestException("请求错误");
+        }
+
         var code = Random.Shared.Next(100000, 999999).ToString();
-        var receiver = input.ReceiverType == "email" ? input.Receiver.Trim().ToLowerInvariant() : input.Receiver.Trim();
+        var receiver = input.ReceiverType == AuthConst.AccountTypeEmail ? input.Receiver.Trim().ToLowerInvariant() : input.Receiver.Trim();
         var expireTime = DateTime.UtcNow.AddMinutes(10);
 
         var oldCodes = await _db.VerificationCode
@@ -50,7 +59,7 @@ public class VerifyCodeService : IVerifyCodeService
             Receiver = receiver,
             SceneCode = input.SceneCode,
             ExpireTime = expireTime,
-            DebugCode = code
+            DebugCode = _hostEnvironment.IsDevelopment() ? code : null
         };
     }
 }

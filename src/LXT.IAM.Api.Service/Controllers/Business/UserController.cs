@@ -45,4 +45,10 @@ public class UserController : BusinessController
     {
         await _userService.AssignAppsAsync(commonUserId, input);
     }
+
+    [HttpPut("{commonUserId}/reset-password")]
+    public async Task ResetPasswordAsync(Guid commonUserId, [FromBody] ResetPasswordInput input)
+    {
+        await _userService.ResetPasswordAsync(commonUserId, input);
+    }
 }

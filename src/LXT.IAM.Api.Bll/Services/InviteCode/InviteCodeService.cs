@@ -1,9 +1,9 @@
 using LXT.IAM.Api.Bll.Services.InviteCode.Dtos;
 using LXT.IAM.Api.Common.Consts;
+using LXT.IAM.Api.Common.Exceptions;
 using LXT.IAM.Api.Common.Helper;
 using LXT.IAM.Api.Common.Intefaces;
 using LXT.IAM.Api.Storage.Context;
-using LXT.IAM.Api.Storage.Entity;
 using Microsoft.EntityFrameworkCore;
 
 namespace LXT.IAM.Api.Bll.Services.InviteCode;
@@ -48,14 +48,14 @@ public class InviteCodeService : IInviteCodeService
         var (success, _, prefix) = InviteCodeHelper.TryParse(code);
         if (!success)
         {
-            throw new InvalidOperationException("邀请码无效");
+            throw new InvalidParameterException("邀请码无效");
         }
 
         return new ResolveInviteCodeOutput
         {
             InviterUserId = Guid.Empty,
             InviterName = string.Empty,
-            CodeType = prefix == "U" ? "universal" : "legacy_alias"
+            CodeType = prefix == "U" ? AuthConst.CodeTypeUniversal : AuthConst.CodeTypeLegacyAlias
         };
     }
 }

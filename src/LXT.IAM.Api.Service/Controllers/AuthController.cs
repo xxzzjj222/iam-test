@@ -49,4 +49,10 @@ public class AuthController : ControllerBase
     {
         return await _authService.GetCurrentUserAsync();
     }
+
+    [HttpPut("change-password")]
+    public async Task ChangePasswordAsync([FromBody] ChangePasswordInput input)
+    {
+        await _authService.ChangePasswordAsync(input);
+    }
 }

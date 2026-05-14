@@ -11,4 +11,5 @@ public interface IUserService : IScopedDependency
     Task FreezeAsync(Guid commonUserId);
     Task UnfreezeAsync(Guid commonUserId);
     Task AssignAppsAsync(Guid commonUserId, AssignUserAppsInput input);
+    Task ResetPasswordAsync(Guid commonUserId, ResetPasswordInput input);
 }

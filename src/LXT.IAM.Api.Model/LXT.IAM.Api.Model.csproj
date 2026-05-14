@@ -7,6 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="I18n\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="I18n\*.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\LXT.IAM.Api.Common\LXT.IAM.Api.Common.csproj" />
   </ItemGroup>
 

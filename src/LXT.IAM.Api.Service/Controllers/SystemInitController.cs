@@ -22,4 +22,18 @@ public class SystemInitController : ControllerBase
     {
         return await _systemInitService.InitializeAsync(input);
     }
+
+    [AllowAnonymous]
+    [HttpGet("status")]
+    public async Task<SystemInitStatusOutput> GetStatusAsync()
+    {
+        return await _systemInitService.GetStatusAsync();
+    }
+
+    [AllowAnonymous]
+    [HttpPost("repair")]
+    public async Task<SystemRepairOutput> RepairAsync()
+    {
+        return await _systemInitService.RepairAsync();
+    }
 }

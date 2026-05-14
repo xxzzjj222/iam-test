@@ -10,4 +10,5 @@ public interface IAuthService : IScopedDependency
     Task<LoginOutput> RegisterAsync(RegisterInput input);
     Task<LoginOutput> RefreshTokenAsync(RefreshTokenInput input);
     Task<CurrentUserOutput> GetCurrentUserAsync();
+    Task ChangePasswordAsync(ChangePasswordInput input);
 }
