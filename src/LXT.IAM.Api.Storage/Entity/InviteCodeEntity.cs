@@ -6,8 +6,8 @@ namespace LXT.IAM.Api.Storage.Entity;
 [Table("invite_code")]
 public class InviteCodeEntity : AuditEntity
 {
-    [Column("common_user_id")]
-    public Guid CommonUserId { get; set; }
+    [Column("user_id")]
+    public Guid UserId { get; set; }
 
     [Column("code")]
     public string Code { get; set; } = string.Empty;
@@ -30,3 +30,4 @@ public class InviteCodeEntity : AuditEntity
     [Column("status")]
     public int Status { get; set; }
 }
+

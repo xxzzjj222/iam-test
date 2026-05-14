@@ -6,8 +6,8 @@ namespace LXT.IAM.Api.Storage.Entity;
 [Table("user_app_role_snapshot")]
 public class UserAppRoleSnapshotEntity : AuditEntity
 {
-    [Column("common_user_id")]
-    public Guid CommonUserId { get; set; }
+    [Column("user_id")]
+    public Guid UserId { get; set; }
 
     [Column("app_code")]
     public string AppCode { get; set; } = string.Empty;
@@ -24,3 +24,4 @@ public class UserAppRoleSnapshotEntity : AuditEntity
     [Column("sync_time")]
     public DateTime SyncTime { get; set; }
 }
+

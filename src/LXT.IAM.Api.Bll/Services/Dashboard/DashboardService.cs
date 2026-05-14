@@ -15,10 +15,10 @@ public class DashboardService : IDashboardService
 
     public async Task<DashboardOverviewOutput> GetOverviewAsync()
     {
-        var totalUserCount = await _db.CommonUser.CountAsync();
+        var totalUserCount = await _db.User.CountAsync();
         var today = DateTime.UtcNow.Date;
-        var newUserCount = await _db.CommonUser.CountAsync(x => x.CreateTime >= today);
-        var activeUserCount = await _db.UserAppActivityDaily.Where(x => x.StatDate == today).Select(x => x.CommonUserId).Distinct().CountAsync();
+        var newUserCount = await _db.User.CountAsync(x => x.CreateTime >= today);
+        var activeUserCount = await _db.UserAppActivityDaily.Where(x => x.StatDate == today).Select(x => x.UserId).Distinct().CountAsync();
         var metrics = await _db.DailyBusinessStat
             .Where(x => x.StatDate == today)
             .Select(x => new AppMetricOutput
@@ -103,3 +103,4 @@ public class DashboardService : IDashboardService
         return (startDate, endDate);
     }
 }
+

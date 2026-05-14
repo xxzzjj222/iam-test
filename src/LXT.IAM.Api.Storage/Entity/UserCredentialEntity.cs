@@ -6,8 +6,8 @@ namespace LXT.IAM.Api.Storage.Entity;
 [Table("user_credential")]
 public class UserCredentialEntity : AuditEntity
 {
-    [Column("common_user_id")]
-    public Guid CommonUserId { get; set; }
+    [Column("user_id")]
+    public Guid UserId { get; set; }
 
     [Column("credential_type")]
     public string CredentialType { get; set; } = string.Empty;
@@ -24,3 +24,4 @@ public class UserCredentialEntity : AuditEntity
     [Column("last_password_change_time")]
     public DateTime? LastPasswordChangeTime { get; set; }
 }
+

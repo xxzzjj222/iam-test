@@ -18,16 +18,14 @@ public class OpenUserController : ControllerBase
     private readonly IOpenUserService _openUserService;
 
     /// <summary>
-    /// 构造
-    /// </summary>
+    /// 构�?    /// </summary>
     public OpenUserController(IOpenUserService openUserService)
     {
         _openUserService = openUserService;
     }
 
     /// <summary>
-    /// 按应用查询用户
-    /// </summary>
+    /// 按应用查询用�?    /// </summary>
     [HttpGet("by-app")]
     [RequireScope(PlatformConst.ScopeUserRead)]
     public async Task<List<OpenUserOutput>> GetUsersByAppAsync([FromQuery] string appCode)
@@ -38,11 +36,11 @@ public class OpenUserController : ControllerBase
     /// <summary>
     /// 根据统一用户编号查询用户
     /// </summary>
-    [HttpGet("{commonUserId}")]
+    [HttpGet("{UserId}")]
     [RequireScope(PlatformConst.ScopeUserRead)]
-    public async Task<OpenUserOutput> GetByCommonUserIdAsync(Guid commonUserId)
+    public async Task<OpenUserOutput> GetByUserIdAsync(Guid UserId)
     {
-        return await _openUserService.GetByCommonUserIdAsync(commonUserId);
+        return await _openUserService.GetByUserIdAsync(UserId);
     }
 
     /// <summary>
@@ -55,3 +53,4 @@ public class OpenUserController : ControllerBase
         return await _openUserService.BatchGetAsync(input);
     }
 }
+

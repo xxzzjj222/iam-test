@@ -7,9 +7,10 @@ namespace LXT.IAM.Api.Bll.Services.User;
 public interface IUserService : IScopedDependency
 {
     Task<PagedList<UserOutput>> GetPagedListAsync(GetUserPagedListInput input);
-    Task<UserOutput> GetAsync(Guid commonUserId);
-    Task FreezeAsync(Guid commonUserId);
-    Task UnfreezeAsync(Guid commonUserId);
-    Task AssignAppsAsync(Guid commonUserId, AssignUserAppsInput input);
-    Task ResetPasswordAsync(Guid commonUserId, ResetPasswordInput input);
+    Task<UserOutput> GetAsync(Guid UserId);
+    Task FreezeAsync(Guid UserId);
+    Task UnfreezeAsync(Guid UserId);
+    Task AssignAppsAsync(Guid UserId, AssignUserAppsInput input);
+    Task ResetPasswordAsync(Guid UserId, ResetPasswordInput input);
 }
+

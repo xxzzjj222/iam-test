@@ -12,8 +12,8 @@ public class UserAppActivityDailyEntity : AuditEntity
     [Column("app_code")]
     public string AppCode { get; set; } = string.Empty;
 
-    [Column("common_user_id")]
-    public Guid CommonUserId { get; set; }
+    [Column("user_id")]
+    public Guid UserId { get; set; }
 
     [Column("active_times")]
     public int ActiveTimes { get; set; }
@@ -21,3 +21,4 @@ public class UserAppActivityDailyEntity : AuditEntity
     [Column("last_active_time")]
     public DateTime LastActiveTime { get; set; }
 }
+

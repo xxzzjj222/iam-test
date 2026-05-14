@@ -26,7 +26,7 @@ public class PlatformFunctionService : IPlatformFunctionService
     public async Task<List<PlatformFunctionOutput>> GetCurrentUserFunctionsAsync()
     {
         var userId = _httpContextUtility.GetUserId();
-        var roleIds = await _db.UserPlatformRole.Where(x => x.CommonUserId == userId).Select(x => x.RoleId).ToListAsync();
+        var roleIds = await _db.UserPlatformRole.Where(x => x.UserId == userId).Select(x => x.RoleId).ToListAsync();
         var functionIds = await _db.PlatformRoleFunction.Where(x => roleIds.Contains(x.RoleId)).Select(x => x.FunctionId).Distinct().ToListAsync();
         var functions = await _db.PlatformFunction.AsNoTracking().Where(x => functionIds.Contains(x.Id)).OrderBy(x => x.Sort).ToListAsync();
         return BuildTree(functions);
@@ -147,3 +147,4 @@ public class PlatformFunctionService : IPlatformFunctionService
         return roots;
     }
 }
+

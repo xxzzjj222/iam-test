@@ -2,7 +2,7 @@ namespace LXT.IAM.Api.Bll.Services.User.Dtos;
 
 public class UserOutput
 {
-    public Guid CommonUserId { get; set; }
+    public Guid UserId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Avatar { get; set; }
     public string? Phone { get; set; }
@@ -12,3 +12,4 @@ public class UserOutput
     public string RegisterAppCode { get; set; } = string.Empty;
     public DateTime CreateTime { get; set; }
 }
+

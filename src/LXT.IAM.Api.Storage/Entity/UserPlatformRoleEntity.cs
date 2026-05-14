@@ -6,9 +6,10 @@ namespace LXT.IAM.Api.Storage.Entity;
 [Table("user_platform_role")]
 public class UserPlatformRoleEntity : AuditEntity
 {
-    [Column("common_user_id")]
-    public Guid CommonUserId { get; set; }
+    [Column("user_id")]
+    public Guid UserId { get; set; }
 
     [Column("role_id")]
     public long RoleId { get; set; }
 }
+

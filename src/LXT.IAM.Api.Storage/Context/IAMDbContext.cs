@@ -14,7 +14,7 @@ public class IAMDbContext : DbContext
         _httpContextUtility = httpContextUtility;
     }
 
-    public DbSet<CommonUserEntity> CommonUser { get; set; }
+    public DbSet<UserEntity> User { get; set; }
     public DbSet<UserIdentifierEntity> UserIdentifier { get; set; }
     public DbSet<UserCredentialEntity> UserCredential { get; set; }
     public DbSet<UserSocialAccountEntity> UserSocialAccount { get; set; }

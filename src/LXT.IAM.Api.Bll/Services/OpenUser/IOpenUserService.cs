@@ -6,6 +6,7 @@ namespace LXT.IAM.Api.Bll.Services.OpenUser;
 public interface IOpenUserService : IScopedDependency
 {
     Task<List<OpenUserOutput>> GetUsersByAppAsync(string appCode);
-    Task<OpenUserOutput> GetByCommonUserIdAsync(Guid commonUserId);
+    Task<OpenUserOutput> GetByUserIdAsync(Guid UserId);
     Task<List<OpenUserOutput>> BatchGetAsync(BatchOpenUserInput input);
 }
+

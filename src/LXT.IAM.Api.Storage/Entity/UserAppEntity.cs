@@ -6,8 +6,8 @@ namespace LXT.IAM.Api.Storage.Entity;
 [Table("user_app")]
 public class UserAppEntity : AuditEntity
 {
-    [Column("common_user_id")]
-    public Guid CommonUserId { get; set; }
+    [Column("user_id")]
+    public Guid UserId { get; set; }
 
     [Column("app_id")]
     public long AppId { get; set; }
@@ -18,3 +18,4 @@ public class UserAppEntity : AuditEntity
     [Column("status")]
     public int Status { get; set; }
 }
+

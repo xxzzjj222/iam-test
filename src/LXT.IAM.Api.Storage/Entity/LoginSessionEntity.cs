@@ -9,8 +9,8 @@ public class LoginSessionEntity : AuditEntity
     [Column("session_id")]
     public Guid SessionId { get; set; }
 
-    [Column("common_user_id")]
-    public Guid CommonUserId { get; set; }
+    [Column("user_id")]
+    public Guid UserId { get; set; }
 
     [Column("app_code")]
     public string AppCode { get; set; } = string.Empty;
@@ -42,3 +42,4 @@ public class LoginSessionEntity : AuditEntity
     [Column("status")]
     public int Status { get; set; }
 }
+

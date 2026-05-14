@@ -26,13 +26,13 @@ public class DailyStatService : IDailyStatService
             var totalUserCount = await (from ua in _db.UserApp
                                         join app in _db.App on ua.AppId equals app.Id
                                         where app.Code == appCode
-                                        select ua.CommonUserId).Distinct().CountAsync();
+                                        select ua.UserId).Distinct().CountAsync();
 
-            var newUserCount = await _db.CommonUser.CountAsync(x => x.RegisterAppCode == appCode && x.CreateTime >= date && x.CreateTime < date.AddDays(1));
+            var newUserCount = await _db.User.CountAsync(x => x.RegisterAppCode == appCode && x.CreateTime >= date && x.CreateTime < date.AddDays(1));
 
             var activeUserCount = await _db.UserAppActivityDaily
                 .Where(x => x.AppCode == appCode && x.StatDate == date)
-                .Select(x => x.CommonUserId)
+                .Select(x => x.UserId)
                 .Distinct()
                 .CountAsync();
 
@@ -50,3 +50,4 @@ public class DailyStatService : IDailyStatService
         await _db.SaveChangesAsync();
     }
 }
+

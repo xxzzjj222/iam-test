@@ -2,7 +2,7 @@ namespace LXT.IAM.Api.Bll.Services.OpenUser.Dtos;
 
 public class OpenUserOutput
 {
-    public Guid CommonUserId { get; set; }
+    public Guid UserId { get; set; }
 
     public string Name { get; set; } = string.Empty;
 
@@ -16,3 +16,4 @@ public class OpenUserOutput
 
     public string RegisterAppCode { get; set; } = string.Empty;
 }
+

@@ -20,7 +20,7 @@ public class OpenStatService : IOpenStatService
         var activeTime = input.ActiveTime ?? DateTime.UtcNow;
         var statDate = activeTime.Date;
         var entity = await _db.UserAppActivityDaily.FirstOrDefaultAsync(x =>
-            x.CommonUserId == input.CommonUserId &&
+            x.UserId == input.UserId &&
             x.AppCode == input.AppCode &&
             x.StatDate == statDate);
 
@@ -29,7 +29,7 @@ public class OpenStatService : IOpenStatService
             entity = new UserAppActivityDailyEntity
             {
                 Id = Yitter.IdGenerator.YitIdHelper.NextId(),
-                CommonUserId = input.CommonUserId,
+                UserId = input.UserId,
                 AppCode = input.AppCode,
                 StatDate = statDate,
                 ActiveTimes = 1,
@@ -43,7 +43,7 @@ public class OpenStatService : IOpenStatService
             entity.LastActiveTime = activeTime;
         }
 
-        var user = await _db.CommonUser.FirstOrDefaultAsync(x => x.CommonUserId == input.CommonUserId);
+        var user = await _db.User.FirstOrDefaultAsync(x => x.UserId == input.UserId);
         if (user != null)
         {
             user.LastActiveTime = activeTime;
@@ -85,7 +85,7 @@ public class OpenStatService : IOpenStatService
     public async Task ReportRoleSnapshotAsync(ReportRoleSnapshotInput input)
     {
         var entity = await _db.UserAppRoleSnapshot.FirstOrDefaultAsync(x =>
-            x.CommonUserId == input.CommonUserId &&
+            x.UserId == input.UserId &&
             x.AppCode == input.AppCode &&
             x.RoleCode == input.RoleCode);
 
@@ -94,7 +94,7 @@ public class OpenStatService : IOpenStatService
             entity = new UserAppRoleSnapshotEntity
             {
                 Id = Yitter.IdGenerator.YitIdHelper.NextId(),
-                CommonUserId = input.CommonUserId,
+                UserId = input.UserId,
                 AppCode = input.AppCode,
                 RoleCode = input.RoleCode,
                 RoleName = input.RoleName,
@@ -113,3 +113,4 @@ public class OpenStatService : IOpenStatService
         await _db.SaveChangesAsync();
     }
 }
+

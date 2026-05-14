@@ -9,15 +9,13 @@ using System.Text;
 namespace LXT.IAM.Api.Common.Helper;
 
 /// <summary>
-/// JWT 令牌工具类
-/// </summary>
+/// JWT 令牌工具�?/// </summary>
 public class JwtTokenHelper
 {
     private readonly string _securityKey;
 
     /// <summary>
-    /// 构造
-    /// </summary>
+    /// 构�?    /// </summary>
     public JwtTokenHelper(IConfiguration configuration)
     {
         _securityKey = configuration["Jwt:SecurityKey"] ?? throw new InternalServerException("Jwt配置缺失");
@@ -26,11 +24,11 @@ public class JwtTokenHelper
     /// <summary>
     /// 生成访问令牌
     /// </summary>
-    public string GenerateAccessToken(Guid commonUserId, string userName, string? phone, string? email, Guid sessionId, string appCode, IEnumerable<string>? platformRoles = null, int expireHours = 2)
+    public string GenerateAccessToken(Guid UserId, string userName, string? phone, string? email, Guid sessionId, string appCode, IEnumerable<string>? platformRoles = null, int expireHours = 2)
     {
         var claims = new List<Claim>
         {
-            new(ClaimTypes.Sid, commonUserId.ToString()),
+            new(ClaimTypes.Sid, UserId.ToString()),
             new(ClaimTypes.Name, userName),
             new(ClaimTypes.MobilePhone, phone ?? string.Empty),
             new(ClaimTypes.Email, email ?? string.Empty),
@@ -53,3 +51,4 @@ public class JwtTokenHelper
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
+

@@ -2,7 +2,7 @@ namespace LXT.IAM.Api.Bll.Services.SystemInit.Dtos;
 
 public class InitializeSystemOutput
 {
-    public Guid CommonUserId { get; set; }
+    public Guid UserId { get; set; }
 
     public string AdminAccount { get; set; } = string.Empty;
 
@@ -10,3 +10,4 @@ public class InitializeSystemOutput
 
     public bool Created { get; set; }
 }
+

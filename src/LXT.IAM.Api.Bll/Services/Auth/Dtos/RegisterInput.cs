@@ -1,4 +1,4 @@
-namespace LXT.IAM.Api.Bll.Services.Auth.Dtos;
+﻿namespace LXT.IAM.Api.Bll.Services.Auth.Dtos;
 
 public class RegisterInput
 {
@@ -9,5 +9,6 @@ public class RegisterInput
     public string VerifyCode { get; set; } = string.Empty;
     public string? InviteCode { get; set; }
     public string AppCode { get; set; } = string.Empty;
+    public string ClientType { get; set; } = string.Empty;
     public string? LanguageCode { get; set; }
 }

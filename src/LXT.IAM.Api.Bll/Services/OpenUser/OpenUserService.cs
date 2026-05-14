@@ -16,13 +16,13 @@ public class OpenUserService : IOpenUserService
 
     public async Task<List<OpenUserOutput>> GetUsersByAppAsync(string appCode)
     {
-        return await (from user in _db.CommonUser.AsNoTracking()
-                      join userApp in _db.UserApp.AsNoTracking() on user.CommonUserId equals userApp.CommonUserId
+        return await (from user in _db.User.AsNoTracking()
+                      join userApp in _db.UserApp.AsNoTracking() on user.UserId equals userApp.UserId
                       join app in _db.App.AsNoTracking() on userApp.AppId equals app.Id
                       where app.Code == appCode && userApp.Status == CommonStatusConst.Enabled
                       select new OpenUserOutput
                       {
-                          CommonUserId = user.CommonUserId,
+                          UserId = user.UserId,
                           Name = user.Name,
                           Avatar = user.Avatar,
                           Phone = user.Phone,
@@ -32,13 +32,13 @@ public class OpenUserService : IOpenUserService
                       }).ToListAsync();
     }
 
-    public async Task<OpenUserOutput> GetByCommonUserIdAsync(Guid commonUserId)
+    public async Task<OpenUserOutput> GetByUserIdAsync(Guid UserId)
     {
-        return await _db.CommonUser.AsNoTracking()
-            .Where(x => x.CommonUserId == commonUserId)
+        return await _db.User.AsNoTracking()
+            .Where(x => x.UserId == UserId)
             .Select(x => new OpenUserOutput
             {
-                CommonUserId = x.CommonUserId,
+                UserId = x.UserId,
                 Name = x.Name,
                 Avatar = x.Avatar,
                 Phone = x.Phone,
@@ -51,11 +51,11 @@ public class OpenUserService : IOpenUserService
 
     public async Task<List<OpenUserOutput>> BatchGetAsync(BatchOpenUserInput input)
     {
-        return await _db.CommonUser.AsNoTracking()
-            .Where(x => input.CommonUserIds.Contains(x.CommonUserId))
+        return await _db.User.AsNoTracking()
+            .Where(x => input.UserIds.Contains(x.UserId))
             .Select(x => new OpenUserOutput
             {
-                CommonUserId = x.CommonUserId,
+                UserId = x.UserId,
                 Name = x.Name,
                 Avatar = x.Avatar,
                 Phone = x.Phone,
@@ -66,3 +66,4 @@ public class OpenUserService : IOpenUserService
             .ToListAsync();
     }
 }
+

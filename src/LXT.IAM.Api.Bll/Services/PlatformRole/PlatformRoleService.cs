@@ -106,17 +106,18 @@ public class PlatformRoleService : IPlatformRoleService
 
     public async Task AssignUserRolesAsync(AssignUserPlatformRolesInput input)
     {
-        var oldRoles = await _db.UserPlatformRole.Where(x => x.CommonUserId == input.CommonUserId).ToListAsync();
+        var oldRoles = await _db.UserPlatformRole.Where(x => x.UserId == input.UserId).ToListAsync();
         _db.UserPlatformRole.RemoveRange(oldRoles);
         foreach (var roleId in input.RoleIds.Distinct())
         {
             _db.UserPlatformRole.Add(new UserPlatformRoleEntity
             {
                 Id = Yitter.IdGenerator.YitIdHelper.NextId(),
-                CommonUserId = input.CommonUserId,
+                UserId = input.UserId,
                 RoleId = roleId
             });
         }
         await _db.SaveChangesAsync();
     }
 }
+

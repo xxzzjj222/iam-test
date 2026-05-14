@@ -21,8 +21,8 @@ public class InviteCodeService : IInviteCodeService
 
     public async Task<List<string>> GetMyInviteCodesAsync()
     {
-        var commonUserId = _httpContextUtility.GetUserId();
-        return await _db.InviteCode.Where(x => x.CommonUserId == commonUserId && x.Status == CommonStatusConst.Enabled)
+        var UserId = _httpContextUtility.GetUserId();
+        return await _db.InviteCode.Where(x => x.UserId == UserId && x.Status == CommonStatusConst.Enabled)
             .OrderByDescending(x => x.IsDefault)
             .ThenBy(x => x.Code)
             .Select(x => x.Code)
@@ -34,10 +34,10 @@ public class InviteCodeService : IInviteCodeService
         var existCode = await _db.InviteCode.FirstOrDefaultAsync(x => x.Code == code && x.Status == CommonStatusConst.Enabled);
         if (existCode != null)
         {
-            var inviter = await _db.CommonUser.FirstAsync(x => x.CommonUserId == existCode.CommonUserId);
+            var inviter = await _db.User.FirstAsync(x => x.UserId == existCode.UserId);
             return new ResolveInviteCodeOutput
             {
-                InviterUserId = existCode.CommonUserId,
+                InviterUserId = existCode.UserId,
                 InviterName = inviter.Name,
                 CodeType = existCode.CodeType,
                 AppCode = existCode.AppCode,
@@ -59,3 +59,4 @@ public class InviteCodeService : IInviteCodeService
         };
     }
 }
+

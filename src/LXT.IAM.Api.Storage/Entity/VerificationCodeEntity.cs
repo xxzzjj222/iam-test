@@ -6,8 +6,8 @@ namespace LXT.IAM.Api.Storage.Entity;
 [Table("verification_code")]
 public class VerificationCodeEntity : AuditEntity
 {
-    [Column("common_user_id")]
-    public Guid? CommonUserId { get; set; }
+    [Column("user_id")]
+    public Guid? UserId { get; set; }
 
     [Column("receiver")]
     public string Receiver { get; set; } = string.Empty;
@@ -36,3 +36,4 @@ public class VerificationCodeEntity : AuditEntity
     [Column("used_time")]
     public DateTime? UsedTime { get; set; }
 }
+

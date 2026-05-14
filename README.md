@@ -1,37 +1,38 @@
-# LXT.IAM.Api
+﻿# LXT.IAM.Api
 
-统一账号与认证中心项目，按 `LXT.AIEnglish.Api` 的分层风格实现。
+统一账号、认证与授权中心项目，整体分层和接口风格参考 `LXT.AIEnglish.Api`。
 
 ## 项目目标
 
-- 提供统一账号、登录注册、验证码、refresh token
-- 提供统一客户端访问控制
-- 提供统一邀请码与邀请关系管理
-- 提供开放接口给业务系统做内部用户查询、服务间认证、统计上报
-- 提供平台角色、平台菜单、开放客户端等后台管理能力
-- 提供短信验证码、邮箱验证码、微信小程序登录、抖音小程序登录能力
+- 提供统一账号注册、登录、刷新令牌、当前用户信息能力
+- 提供统一验证码发送能力，支持短信和邮箱
+- 提供统一第三方登录接入能力，当前已支持微信小程序、抖音小程序
+- 提供统一用户、应用、平台角色、平台功能、OAuth 客户端管理能力
+- 提供统一邀请码与邀请关系管理能力
+- 提供统一开放接口，供业务系统做用户查询、服务间认证、统计上报
+- 提供统一首页统计所需的用户趋势、活跃趋势、业务指标汇总能力
 
 ## 目录结构
 
 - `src/LXT.IAM.Api.Common`
-  - 常量、异常、公共模型、工具、Dapper
+  常量、异常、公共模型、工具类、Dapper
 - `src/LXT.IAM.Api.Model`
-  - 配置模型、多语言资源
+  配置模型、多语言资源
 - `src/LXT.IAM.Api.Storage`
-  - Entity、DbContext
+  实体、`DbContext`
 - `src/LXT.IAM.Api.Dal`
-  - 基础仓储
+  基础仓储
 - `src/LXT.IAM.Api.Bll`
-  - 业务服务、DTO、Migration、Dashboard、Open 接口能力
+  业务服务、DTO、Mapper、统计与开放接口能力
 - `src/LXT.IAM.Api.Service`
-  - Web API 启动入口、Controller、Filter、Middleware、自定义 SQL Migration
+  Web API 启动入口、控制器、中间件、SQL Migration
 
 ## 技术栈
 
 - .NET 8
 - ASP.NET Core Web API
 - Entity Framework Core + Pomelo MySQL
-- 自定义 SQL 迁移机制
+- 自定义 SQL Migration 机制
 - JWT
 - Dapper
 - Serilog
@@ -42,7 +43,7 @@
 
 ## 数据库迁移
 
-项目启动时执行 SQL 脚本升级，不使用 EF Core code-first migration。
+项目启动时自动执行 SQL 升级脚本，不使用 EF Core Code First Migration。
 
 迁移目录：
 
@@ -54,17 +55,22 @@
 - `app_version`
 - `app_upgrade_log`
 
+当前已包含：
+
+- `v1.0.0` 初始化建表与基础种子数据
+
 ## 运行前配置
 
 修改文件：
 
 - `src/LXT.IAM.Api.Service/appsettings.json`
 
-关键配置：
+关键配置项：
 
 - `Db:IAMDb:ConnStr`
 - `Jwt:SecurityKey`
 - `SnowflakeIdOptions:WorkId`
+- `Swagger:AutoOpenBrowser`
 - `SMS`
 - `Email`
 - `AppOptions`
@@ -118,7 +124,12 @@ dotnet build LXT.IAM.Api.sln
 dotnet run --project src\LXT.IAM.Api.Service\LXT.IAM.Api.Service.csproj --urls http://127.0.0.1:5037
 ```
 
-Swagger：
+开发环境下：
+
+- `launchSettings.json` 已开启浏览器自动打开
+- `appsettings.json` 中 `Swagger:AutoOpenBrowser=true` 时，直接 `dotnet run` 也会自动打开 Swagger
+
+Swagger 地址：
 
 - `http://127.0.0.1:5037/swagger/index.html`
 
@@ -143,16 +154,16 @@ Swagger：
 
 - `receiverType=phone` 时走短信发送
 - `receiverType=email` 时走邮箱发送
-- 当前已支持短信/邮箱发送频控和时间窗口次数限制
+- 已支持发送频控、时间窗口次数限制
 
 ### 用户管理
 
 - `POST /api/user/page`
-- `GET /api/user/{commonUserId}`
-- `PUT /api/user/{commonUserId}/freeze`
-- `PUT /api/user/{commonUserId}/unfreeze`
-- `POST /api/user/{commonUserId}/apps`
-- `PUT /api/user/{commonUserId}/reset-password`
+- `GET /api/user/{userId}`
+- `PUT /api/user/{userId}/freeze`
+- `PUT /api/user/{userId}/unfreeze`
+- `POST /api/user/{userId}/apps`
+- `PUT /api/user/{userId}/reset-password`
 
 ### 应用管理
 
@@ -189,7 +200,7 @@ Swagger：
 - `POST /api/open-auth/token`
 - `POST /api/open-auth/introspect`
 - `GET /api/open-user/by-app`
-- `GET /api/open-user/{commonUserId}`
+- `GET /api/open-user/{userId}`
 - `POST /api/open-user/batch`
 - `POST /api/open-stat/user-activity/report`
 - `POST /api/open-stat/business-metric/report`
@@ -203,25 +214,25 @@ Swagger：
 
 ## 当前实现说明
 
-当前版本已经具备：
+当前版本已具备：
 
-- 统一用户主表与凭证表
+- 统一用户主表、标识表、凭证表、登录会话表
 - 统一异常模型与多语言错误输出
-- 验证码发送落库
-- 注册、密码登录、验证码登录、refresh token
-- 统一邀请码与 AIThesis 兼容邀请码规则
-- 平台角色、平台菜单、开放客户端管理
-- 服务间认证与 scope 校验
-- 活跃/业务/角色快照上报
-- dashboard 聚合与日统计汇总
+- 短信验证码、邮箱验证码发送
+- 密码登录、验证码登录、注册、刷新令牌
+- 微信小程序登录、抖音小程序登录
+- 统一邀请码与邀请关系模型
+- 平台角色、平台功能、OAuth 客户端管理
+- 服务间认证与 Scope 校验
+- 活跃上报、业务指标上报、角色快照上报
+- Dashboard 汇总与日报刷新
 - 超级管理员初始化与修复
-- 微信/抖音小程序登录接入
-- 阿里云短信发送适配层
-- MailKit 邮箱发送适配层
 
-当前仍建议后续补充：
+后续建议继续补充：
 
-- 真实微信公众号登录
-- 邮箱验证码频控与缓存次数限制
-- 更完整的异常消息资源整理
-- 平台菜单按钮级权限前端联动
+- 微信公众号登录
+- 更完整的异常资源国际化整理
+- 更细粒度的平台按钮权限
+- 业务系统对接改造脚本与联调文档
+
+

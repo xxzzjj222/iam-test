@@ -18,7 +18,7 @@ public class UserService : IUserService
 
     public async Task<PagedList<UserOutput>> GetPagedListAsync(GetUserPagedListInput input)
     {
-        var query = _db.CommonUser.AsNoTracking().AsQueryable();
+        var query = _db.User.AsNoTracking().AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(input.Keyword))
         {
@@ -36,7 +36,7 @@ public class UserService : IUserService
         if (!string.IsNullOrWhiteSpace(input.AppCode))
         {
             query = from u in query
-                    join ua in _db.UserApp on u.CommonUserId equals ua.CommonUserId
+                    join ua in _db.UserApp on u.UserId equals ua.UserId
                     join app in _db.App on ua.AppId equals app.Id
                     where app.Code == input.AppCode
                     select u;
@@ -63,7 +63,7 @@ public class UserService : IUserService
             .Take(input.PageSize)
             .Select(x => new UserOutput
             {
-                CommonUserId = x.CommonUserId,
+                UserId = x.UserId,
                 Name = x.Name,
                 Avatar = x.Avatar,
                 Phone = x.Phone,
@@ -84,13 +84,13 @@ public class UserService : IUserService
         };
     }
 
-    public async Task<UserOutput> GetAsync(Guid commonUserId)
+    public async Task<UserOutput> GetAsync(Guid UserId)
     {
-        return await _db.CommonUser.AsNoTracking()
-            .Where(x => x.CommonUserId == commonUserId)
+        return await _db.User.AsNoTracking()
+            .Where(x => x.UserId == UserId)
             .Select(x => new UserOutput
             {
-                CommonUserId = x.CommonUserId,
+                UserId = x.UserId,
                 Name = x.Name,
                 Avatar = x.Avatar,
                 Phone = x.Phone,
@@ -103,30 +103,30 @@ public class UserService : IUserService
             .FirstAsync();
     }
 
-    public async Task FreezeAsync(Guid commonUserId)
+    public async Task FreezeAsync(Guid UserId)
     {
-        var user = await _db.CommonUser.FirstAsync(x => x.CommonUserId == commonUserId);
+        var user = await _db.User.FirstAsync(x => x.UserId == UserId);
         user.IsFrozen = true;
         await _db.SaveChangesAsync();
     }
 
-    public async Task UnfreezeAsync(Guid commonUserId)
+    public async Task UnfreezeAsync(Guid UserId)
     {
-        var user = await _db.CommonUser.FirstAsync(x => x.CommonUserId == commonUserId);
+        var user = await _db.User.FirstAsync(x => x.UserId == UserId);
         user.IsFrozen = false;
         await _db.SaveChangesAsync();
     }
 
-    public async Task AssignAppsAsync(Guid commonUserId, AssignUserAppsInput input)
+    public async Task AssignAppsAsync(Guid UserId, AssignUserAppsInput input)
     {
-        var existing = await _db.UserApp.Where(x => x.CommonUserId == commonUserId).ToListAsync();
+        var existing = await _db.UserApp.Where(x => x.UserId == UserId).ToListAsync();
         _db.UserApp.RemoveRange(existing);
         foreach (var appId in input.AppIds.Distinct())
         {
             _db.UserApp.Add(new Storage.Entity.UserAppEntity
             {
                 Id = Yitter.IdGenerator.YitIdHelper.NextId(),
-                CommonUserId = commonUserId,
+                UserId = UserId,
                 AppId = appId,
                 GrantType = "manual",
                 Status = CommonStatusConst.Enabled
@@ -136,10 +136,10 @@ public class UserService : IUserService
         await _db.SaveChangesAsync();
     }
 
-    public async Task ResetPasswordAsync(Guid commonUserId, ResetPasswordInput input)
+    public async Task ResetPasswordAsync(Guid UserId, ResetPasswordInput input)
     {
         var credential = await _db.UserCredential.FirstOrDefaultAsync(x =>
-            x.CommonUserId == commonUserId &&
+            x.UserId == UserId &&
             x.CredentialType == AuthConst.CredentialTypePassword);
 
         if (credential == null)
@@ -147,7 +147,7 @@ public class UserService : IUserService
             credential = new Storage.Entity.UserCredentialEntity
             {
                 Id = Yitter.IdGenerator.YitIdHelper.NextId(),
-                CommonUserId = commonUserId,
+                UserId = UserId,
                 CredentialType = AuthConst.CredentialTypePassword,
                 PasswordHash = PasswordHelper.HashPassword(input.NewPassword),
                 PasswordVersion = "bcrypt",
@@ -167,3 +167,4 @@ public class UserService : IUserService
         await _db.SaveChangesAsync();
     }
 }
+

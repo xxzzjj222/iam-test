@@ -3,11 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LXT.IAM.Api.Storage.Entity;
 
-[Table("common_user")]
-public class CommonUserEntity : AuditEntity
+[Table("user")]
+public class UserEntity : AuditEntity
 {
-    [Column("common_user_id")]
-    public Guid CommonUserId { get; set; }
+    [Column("user_id")]
+    public Guid UserId { get; set; }
 
     [Column("name")]
     public string Name { get; set; } = string.Empty;

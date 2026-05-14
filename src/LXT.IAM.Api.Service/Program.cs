@@ -1,4 +1,4 @@
-using LXT.IAM.Api.Bll.Mapper;
+﻿using LXT.IAM.Api.Bll.Mapper;
 using LXT.IAM.Api.Common.Consts;
 using LXT.IAM.Api.Common.Helper;
 using LXT.IAM.Api.Common.Intefaces;
@@ -18,6 +18,7 @@ using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Serilog;
+using System.Diagnostics;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,7 +38,7 @@ builder.Services.Configure<DouyinAppOptions>(builder.Configuration.GetSection("D
 builder.Services.AddI18nAspNetCore(defaultLanguage: "zh-CN");
 builder.Services.AddI18nResource(options =>
 {
-    var basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "I18n").ToString();
+    var basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "I18n");
     if (Directory.Exists(basePath))
     {
         options.AddJsonDirectory(basePath);
@@ -71,8 +72,16 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Version = "v1", Title = "IAM API文档" });
-    Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.xml").ToList().ForEach(file => options.IncludeXmlComments(file, true));
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1",
+        Title = "LXT.IAM.Api"
+    });
+
+    Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.xml")
+        .ToList()
+        .ForEach(file => options.IncludeXmlComments(file, true));
+
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -87,17 +96,22 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "请输入带有Bearer的Token，形如“Bearer {Token}”",
+        Description = "请输入 Bearer Token，格式：Bearer {token}",
         Name = HttpHeaderConst.Authorization,
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey
     });
+
     options.OperationFilter<AcceptLanguageHeaderFilter>();
 });
 
-Log.Logger = ServiceCollectionExtension.GetLogConfig("LXT.IAM.Api", bool.Parse(builder.Configuration["Loki:Enable"] ?? "false"), builder.Configuration["Loki:Url"]);
+Log.Logger = ServiceCollectionExtension.GetLogConfig(
+    "LXT.IAM.Api",
+    bool.Parse(builder.Configuration["Loki:Enable"] ?? "false"),
+    builder.Configuration["Loki:Url"]);
 builder.Host.UseSerilog();
 
 builder.Services.AddAuthentication(options =>
@@ -123,10 +137,36 @@ builder.Services.AddTransient<IStartupFilter, MigrateStartupFilter>();
 
 var app = builder.Build();
 
-if (bool.TryParse(app.Configuration["Swagger:Enable"], out var isEnable) && isEnable)
+var swaggerEnabled = app.Configuration.GetValue<bool>("Swagger:Enable");
+if (swaggerEnabled)
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+if (swaggerEnabled && app.Environment.IsDevelopment() && app.Configuration.GetValue<bool>("Swagger:AutoOpenBrowser"))
+{
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        try
+        {
+            var baseUrl = app.Urls.FirstOrDefault()
+                          ?? app.Configuration["ASPNETCORE_URLS"]?.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
+                          ?? "http://localhost:5014";
+            var swaggerPath = app.Configuration["Swagger:AutoOpenPath"] ?? "swagger/index.html";
+            var swaggerUrl = $"{baseUrl.TrimEnd('/')}/{swaggerPath.TrimStart('/')}";
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = swaggerUrl,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "自动打开 Swagger 页面失败");
+        }
+    });
 }
 
 app.UseMiddleware<ErrorHandlingMiddleware>();

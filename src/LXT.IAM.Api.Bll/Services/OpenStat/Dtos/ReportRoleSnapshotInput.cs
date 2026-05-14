@@ -2,7 +2,7 @@ namespace LXT.IAM.Api.Bll.Services.OpenStat.Dtos;
 
 public class ReportRoleSnapshotInput
 {
-    public Guid CommonUserId { get; set; }
+    public Guid UserId { get; set; }
 
     public string AppCode { get; set; } = string.Empty;
 
@@ -12,3 +12,4 @@ public class ReportRoleSnapshotInput
 
     public string? SourceRefId { get; set; }
 }
+
