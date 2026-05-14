@@ -2,6 +2,9 @@ using Newtonsoft.Json;
 
 namespace LXT.IAM.Api.Common.Models.Base;
 
+/// <summary>
+/// 分页请求参数
+/// </summary>
 public class PaginationParams
 {
     [JsonProperty("pageIndex")]

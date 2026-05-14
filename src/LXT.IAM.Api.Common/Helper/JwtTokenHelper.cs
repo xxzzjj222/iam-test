@@ -8,15 +8,24 @@ using System.Text;
 
 namespace LXT.IAM.Api.Common.Helper;
 
+/// <summary>
+/// JWT 令牌工具类
+/// </summary>
 public class JwtTokenHelper
 {
     private readonly string _securityKey;
 
+    /// <summary>
+    /// 构造
+    /// </summary>
     public JwtTokenHelper(IConfiguration configuration)
     {
         _securityKey = configuration["Jwt:SecurityKey"] ?? throw new InternalServerException("Jwt配置缺失");
     }
 
+    /// <summary>
+    /// 生成访问令牌
+    /// </summary>
     public string GenerateAccessToken(Guid commonUserId, string userName, string? phone, string? email, Guid sessionId, string appCode, IEnumerable<string>? platformRoles = null, int expireHours = 2)
     {
         var claims = new List<Claim>

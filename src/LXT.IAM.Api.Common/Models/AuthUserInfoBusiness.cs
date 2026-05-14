@@ -1,5 +1,8 @@
 namespace LXT.IAM.Api.Common.Models;
 
+/// <summary>
+/// 当前认证用户业务模型
+/// </summary>
 public class AuthUserInfoBusiness
 {
     public Guid UserId { get; set; }

@@ -1,10 +1,16 @@
 namespace LXT.IAM.Api.Common.Helper;
 
+/// <summary>
+/// Base58 编码转换工具
+/// </summary>
 public static class Base58Converter
 {
     private const string Characters5 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
     private const string Characters6 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 
+    /// <summary>
+    /// 转为 Base58 字符串
+    /// </summary>
     public static string ToBase58(long decimalNumber, int length = 6)
     {
         if (decimalNumber < 0)
@@ -23,6 +29,9 @@ public static class Base58Converter
         return new string(result);
     }
 
+    /// <summary>
+    /// 从 Base58 字符串尝试还原数字
+    /// </summary>
     public static (bool, int) TryParseFromBase58(string base58Number, int length = 6)
     {
         var result = 0;

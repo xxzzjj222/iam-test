@@ -6,21 +6,33 @@ using System.Data.Common;
 
 namespace LXT.IAM.Api.Common.Orms.Dapper;
 
+/// <summary>
+/// Dapper 访问实现
+/// </summary>
 public class DapperProvider : IDapperProvider
 {
     private readonly string _connectionString;
 
+    /// <summary>
+    /// 构造
+    /// </summary>
     public DapperProvider(IConfiguration configuration)
     {
         _connectionString = configuration["Db:IAMDb:ConnStr"] ?? string.Empty;
     }
 
+    /// <summary>
+    /// 查询单条记录
+    /// </summary>
     public async Task<T?> QueryAsync<T>(string sql, object? param = null)
     {
         await using var conn = new MySqlConnection(_connectionString);
         return await conn.QueryFirstOrDefaultAsync<T>(sql, param).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// 查询列表
+    /// </summary>
     public async Task<List<T>> QueryListAsync<T>(string sql, object? param = null)
     {
         await using var conn = new MySqlConnection(_connectionString);
@@ -28,6 +40,9 @@ public class DapperProvider : IDapperProvider
         return result.ToList();
     }
 
+    /// <summary>
+    /// 执行 SQL
+    /// </summary>
     public async Task<int> ExecuteAsync(string sql, object? param = null, IDbTransaction? trans = null, IDbConnection? sourceConn = null)
     {
         if (sourceConn != null)
@@ -39,6 +54,9 @@ public class DapperProvider : IDapperProvider
         return await conn.ExecuteAsync(sql, param, trans).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// 执行事务
+    /// </summary>
     public async ValueTask<string> ExecuteTransactionAsync(Func<DbConnection, DbTransaction, Task> func)
     {
         var errorMsg = string.Empty;

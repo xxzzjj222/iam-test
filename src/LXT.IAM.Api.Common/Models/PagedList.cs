@@ -1,5 +1,8 @@
 namespace LXT.IAM.Api.Common.Models;
 
+/// <summary>
+/// 分页结果
+/// </summary>
 public class PagedList<T>
 {
     public int PageIndex { get; set; }
